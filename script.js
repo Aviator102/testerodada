@@ -21,17 +21,10 @@ setInterval(() => {
             
             // Exibir resultados agrupados por rodada
             for (const [rodada, resultados] of Object.entries(resultadosPorRodada)) {
-                // Adiciona título da rodada
-                const divRodada = document.createElement('div');
-                divRodada.className = 'resultado';
-                divRodada.textContent = `Rodada ${rodada}`;
-                document.getElementById('resultados-api').appendChild(divRodada);
-                
-                // Adiciona os resultados na grid
                 resultados.forEach(resultado => {
                     const div = document.createElement('div');
                     div.className = 'resultado';
-                    div.textContent = `Odd: ${resultado.odd} | Hora: ${resultado.hour}`;
+                    div.textContent = `Odd: ${resultado.odd} | Hora: ${resultado.hour} | Rodada: ${rodada}`; // Formato ajustado
                     document.getElementById('resultados-api').appendChild(div);
                     
                     // Salvar resultado no banco de dados
@@ -73,7 +66,7 @@ function fetchSavedResults() {
             data.forEach(resultado => {
                 const div = document.createElement('div');
                 div.className = 'resultado';
-                div.textContent = `Valor: ${resultado.valor} | Hora: ${resultado.hora} | Rodada: ${resultado.rodada}`;
+                div.textContent = `Odd: ${resultado.valor} | Hora: ${resultado.hora} | Rodada: ${resultado.rodada}`; // Formato ajustado
                 document.getElementById('resultados-salvos').appendChild(div);
             });
         })
