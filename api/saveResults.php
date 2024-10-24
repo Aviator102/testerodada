@@ -23,22 +23,33 @@ if (isset($data['valor']) && isset($data['hora'])) {
     $valor = $conn->real_escape_string($data['valor']);
     $hora = $conn->real_escape_string($data['hora']);
 
-    // Obter o valor atual da rodada
-    $sqlRodada = "SELECT MAX(rodada) AS max_rodada FROM resultados";
-    $result = $conn->query($sqlRodada);
-    $rodada = 1; // Valor padrão se não houver resultados
+    // Verificar se o resultado já existe no banco de dados
+    $checkSql = "SELECT * FROM resultados WHERE valor = '$valor' AND hora = '$hora'";
+    $checkResult = $conn->query($checkSql);
 
-    if ($result && $row = $result->fetch_assoc()) {
-        $rodada = $row['max_rodada'] + 1; // Incrementa o contador
-    }
+    if ($checkResult->num_rows === 0) { // Se não houver resultados, insira
+        // Obter o valor atual da rodada
+        $sqlRodada = "SELECT MAX(rodada) AS max_rodada FROM resultados";
+        $result = $conn->query($sqlRodada);
+        $rodada = 1; // Valor padrão se não houver resultados
 
-    // Inserir dados no banco
-    $sql = "INSERT INTO resultados (rodada, valor, hora) VALUES ('$rodada', '$valor', '$hora')";
+        if ($result && $row = $result->fetch_assoc()) {
+            $rodada = $row['max_rodada'] + 1; // Incrementa o contador
+        }
 
-    if ($conn->query($sql) === TRUE) {
-        echo json_encode(["status" => "sucesso"]);
+        // Captura a data atual no formato YYYY-MM-DD
+        $formattedDate = date('Y-m-d'); // Data atual formatada
+
+        // Inserir dados no banco
+        $sql = "INSERT INTO resultados (rodada, valor, hora, formattedDate) VALUES ('$rodada', '$valor', '$hora', '$formattedDate')";
+
+        if ($conn->query($sql) === TRUE) {
+            echo json_encode(["status" => "sucesso"]);
+        } else {
+            echo json_encode(["status" => "erro", "mensagem" => $conn->error]);
+        }
     } else {
-        echo json_encode(["status" => "erro", "mensagem" => $conn->error]);
+        echo json_encode(["status" => "existe", "mensagem" => "Resultado já salvo."]);
     }
 } else {
     echo json_encode(["status" => "erro", "mensagem" => "Dados inválidos."]);
