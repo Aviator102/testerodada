@@ -3,50 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultados da Aposta</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link para o CSS -->
-    <script src="public/script.js" defer></script> <!-- Script JS -->
+    <title>Resultados da API</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: #f9f9f9;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        #resultados {
-            margin-top: 20px;
-            padding: 10px;
+            padding: 20px;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            background-color: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         .resultado-item {
-            display: flex;
-            justify-content: space-between;
+            margin: 10px 0;
             padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        .resultado-item:last-child {
-            border-bottom: none; /* Remove a borda do último item */
+            border: 1px solid #007BFF;
+            border-radius: 4px;
+            background-color: #f9f9f9;
         }
         .resultado-valor {
             font-weight: bold;
-            color: #4CAF50; /* Cor verde para o valor */
-        }
-        .resultado-hora {
-            color: #777; /* Cor cinza para a hora */
         }
     </style>
 </head>
 <body>
+    <h1>Resultados da API</h1>
+    <div id="resultados"></div>
 
-<h1>Resultados da Aposta</h1>
-<div id="resultados">
-    <!-- Os resultados serão exibidos aqui -->
-</div>
-
-</body>
-</html>
+    <script>
+        async function fetchAndSaveResults() {
+            try {
+                const today = new Date();
+                const date = today.toISOString().split('T')[0]
