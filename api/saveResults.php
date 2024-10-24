@@ -20,8 +20,8 @@ $data = json_decode(file_get_contents('php://input'), true);
 
 // Certifique-se de que os dados que você espera estão presentes
 if (isset($data['valor']) && isset($data['hora'])) {
-    $valor = $conn->real_escape_string($data['valor']);
-    $hora = $conn->real_escape_string($data['hora']);
+    $valor = $conn->real_escape_string($data['valor']); // A propriedade "odd" como "valor"
+    $hora = $conn->real_escape_string($data['hora']);   // A propriedade "hour" como "hora"
 
     // Verificar se o resultado já existe no banco de dados
     $checkSql = "SELECT * FROM resultados WHERE valor = '$valor' AND hora = '$hora'";
