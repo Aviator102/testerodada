@@ -9,7 +9,7 @@ setInterval(() => {
             
             data.forEach((resultado, index) => {
                 // Adiciona o resultado à rodada correspondente
-                const rodada = index + 1; // Simulando rodada como um contador sequencial
+                const rodada = Math.floor(index / 10) + 1; // Agrupa resultados a cada 10
                 if (!resultadosPorRodada[rodada]) {
                     resultadosPorRodada[rodada] = [];
                 }
@@ -21,15 +21,18 @@ setInterval(() => {
             
             // Exibir resultados agrupados por rodada
             for (const [rodada, resultados] of Object.entries(resultadosPorRodada)) {
+                // Adiciona título da rodada
                 const divRodada = document.createElement('div');
-                divRodada.className = 'rodada';
-                divRodada.innerHTML = `<strong>Rodada ${rodada}</strong>`;
+                divRodada.className = 'resultado';
+                divRodada.textContent = `Rodada ${rodada}`;
+                document.getElementById('resultados-api').appendChild(divRodada);
                 
+                // Adiciona os resultados na grid
                 resultados.forEach(resultado => {
                     const div = document.createElement('div');
                     div.className = 'resultado';
                     div.textContent = `Odd: ${resultado.odd} | Hora: ${resultado.hour}`;
-                    divRodada.appendChild(div);
+                    document.getElementById('resultados-api').appendChild(div);
                     
                     // Salvar resultado no banco de dados
                     fetch('saveResults.php', {
@@ -53,8 +56,6 @@ setInterval(() => {
                     })
                     .catch(err => console.error('Erro ao salvar:', err));
                 });
-                
-                document.getElementById('resultados-api').appendChild(divRodada);
             }
         })
         .catch(err => {
