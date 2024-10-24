@@ -3,13 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultados da API</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link para CSS se necessário -->
-    <script src="script.js" defer></script>
+    <title>Resultados da API Aviator</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .result { margin: 10px 0; }
+        .status { font-weight: bold; }
+    </style>
 </head>
 <body>
     <h1>Resultados da API Aviator</h1>
-    <div id="status"></div>
-    <div id="resultados"></div>
+    <div id="apiResults"></div>
+    <div id="savedResults"></div>
+    <div class="status" id="statusMessage"></div>
+
+    <script src="script.js"></script>
 </body>
 </html>
