@@ -4,36 +4,36 @@ $username = "painelrodada";
 $password = "painelrodada";
 $dbname = "painelrodada";
 
-// Criação da conexão
+// Criar conexão
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Verifica a conexão
+// Verificar conexão
 if ($conn->connect_error) {
-    die(json_encode(["message" => "Erro de conexão: " . $conn->connect_error]));
+    die(json_encode(["success" => false, "message" => "Conexão falhou: " . $conn->connect_error]));
 }
 
-// Recebe os dados do JSON
+// Obter os dados da requisição
 $data = json_decode(file_get_contents('php://input'), true);
-$valor = $data['valor'];
-$hora = $data['hora'];
 
-// Incrementa a rodada
-$sqlRodada = "SELECT MAX(rodada) AS max_rodada FROM resultados";
-$resultRodada = $conn->query($sqlRodada);
-$row = $resultRodada->fetch_assoc();
-$rodada = $row['max_rodada'] ? $row['max_rodada'] + 1 : 1; // Se não houver rodada, começa em 1
+if (isset($data['valor']) && isset($data['hora'])) {
+    $valor = $conn->real_escape_string($data['valor']);
+    $hora = $conn->real_escape_string($data['hora']);
 
-// Prepara e executa a inserção
-$sql = "INSERT INTO resultados (valor, hora, rodada) VALUES (?, ?, ?)";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("ssi", $valor, $hora, $rodada);
+    // Obter a próxima rodada
+    $result = $conn->query("SELECT IFNULL(MAX(rodada), 0) + 1 AS nova_rodada FROM resultados");
+    $row = $result->fetch_assoc();
+    $novaRodada = $row['nova_rodada'];
 
-if ($stmt->execute()) {
-    $stmt->close();
-    $conn->close();
-    echo json_encode(["message" => "Dados inseridos com sucesso!"]);
+    // Inserir os dados no banco de dados
+    $sql = "INSERT INTO resultados (valor, hora, rodada) VALUES ('$valor', '$hora', $novaRodada)";
+    
+    if ($conn->query($sql) === TRUE) {
+        echo json_encode(["success" => true, "message" => "Resultado salvo com sucesso!"]);
+    } else {
+        echo json_encode(["success" => false, "message" => "Erro ao salvar: " . $conn->error]);
+    }
 } else {
-    echo json_encode(["message" => "Erro ao inserir dados: " . $conn->error]);
+    echo json_encode(["success" => false, "message" => "Dados inválidos."]);
 }
 
 $conn->close();
