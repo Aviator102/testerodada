@@ -4,28 +4,21 @@ $username = "painelrodada";
 $password = "painelrodada";
 $dbname = "painelrodada";
 
-// Criação da conexão
 $conn = new mysqli($servername, $username, $password, $dbname);
-
-// Verifica a conexão
 if ($conn->connect_error) {
-    die(json_encode(["message" => "Erro de conexão: " . $conn->connect_error]));
+    die(json_encode(["success" => false, "message" => "Conexão falhou: " . $conn->connect_error]));
 }
 
-// Consulta os resultados salvos
-$sql = "SELECT valor, hora, rodada FROM resultados";
+$sql = "SELECT valor, hora FROM resultados";
 $result = $conn->query($sql);
+$dados = [];
 
-$results = [];
 if ($result->num_rows > 0) {
-    // Busca os resultados
-    while($row = $result->fetch_assoc()) {
-        $results[] = $row;
+    while ($row = $result->fetch_assoc()) {
+        $dados[] = $row;
     }
-} 
+}
 
+echo json_encode($dados);
 $conn->close();
-
-// Retorna os resultados em formato JSON
-echo json_encode($results);
 ?>
