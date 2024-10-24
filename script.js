@@ -27,11 +27,16 @@ async function fetchAndSaveResults() {
         console.log("Buscando resultados da API...");
         const response = await fetch('https://api-aviator-cb5db3cad4c0.herokuapp.com/history-odd?date=2024-09-18&numberVelas=10&betHouse=Aposta_ganha');
         
+        // Verifica se a resposta da API está ok
         if (!response.ok) {
-            throw new Error(`Erro na API: ${response.status}`);
+            throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
         }
-        
-        const data = await response.json();
+
+        const textResponse = await response.text(); // Lê a resposta como texto
+        console.log("Resposta da API:", textResponse); // Log da resposta
+
+        const data = JSON.parse(textResponse); // Tenta fazer o parse do JSON
+
         console.log("Resultados da API:", data); // Log dos resultados obtidos
 
         const statusDiv = document.getElementById('status'); // Seleciona a div de status
