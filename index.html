@@ -9,13 +9,15 @@
             font-family: Arial, sans-serif;
             margin: 20px;
         }
-        .resultado {
-            margin-bottom: 10px;
+        .container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
         }
-        .rodada {
+        .resultado {
             border: 1px solid #ccc;
             padding: 10px;
-            margin-bottom: 20px;
+            text-align: center;
         }
         .status {
             color: green;
@@ -26,10 +28,10 @@
 <body>
     <h1>Resultados da API Aviator</h1>
     <h2>Resultados Obtidos da API</h2>
-    <div id="resultados-api"></div>
+    <div id="resultados-api" class="container"></div>
 
     <h2>Resultados Salvos</h2>
-    <div id="resultados-salvos"></div>
+    <div id="resultados-salvos" class="container"></div>
     
     <div class="status" id="status"></div>
 
