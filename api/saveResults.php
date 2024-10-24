@@ -15,45 +15,24 @@ if ($conn->connect_error) {
     die(json_encode(["status" => "erro", "mensagem" => "Conexão falhou: " . $conn->connect_error]));
 }
 
-// Receber os dados JSON da requisição
-$data = json_decode(file_get_contents('php://input'), true);
+// Obter os dados do POST
+$data = json_decode(file_get_contents("php://input"));
 
-// Certifique-se de que os dados que você espera estão presentes
-if (isset($data['valor']) && isset($data['hora'])) {
-    $valor = $conn->real_escape_string($data['valor']); // A propriedade "odd" como "valor"
-    $hora = $conn->real_escape_string($data['hora']);   // A propriedade "hour" como "hora"
+// Preparar a consulta
+$stmt = $conn->prepare("INSERT INTO resultados (valor, hora, rodada, formattedDate) VALUES (?, ?, ?, ?)");
+$stmt->bind_param("ssis", $data->valor, $data->hora, $rodada, $formattedDate);
 
-    // Verificar se o resultado já existe no banco de dados
-    $checkSql = "SELECT * FROM resultados WHERE valor = '$valor' AND hora = '$hora'";
-    $checkResult = $conn->query($checkSql);
+// Definir o valor de rodada e formattedDate
+$rodada = 1; // Ou outra lógica para incrementar
+$formattedDate = date('Y-m-d'); // Data atual no formato YYYY-MM-DD
 
-    if ($checkResult->num_rows === 0) { // Se não houver resultados, insira
-        // Obter o valor atual da rodada
-        $sqlRodada = "SELECT MAX(rodada) AS max_rodada FROM resultados";
-        $result = $conn->query($sqlRodada);
-        $rodada = 1; // Valor padrão se não houver resultados
-
-        if ($result && $row = $result->fetch_assoc()) {
-            $rodada = $row['max_rodada'] + 1; // Incrementa o contador
-        }
-
-        // Captura a data atual no formato YYYY-MM-DD
-        $formattedDate = date('Y-m-d'); // Data atual formatada
-
-        // Inserir dados no banco
-        $sql = "INSERT INTO resultados (rodada, valor, hora, formattedDate) VALUES ('$rodada', '$valor', '$hora', '$formattedDate')";
-
-        if ($conn->query($sql) === TRUE) {
-            echo json_encode(["status" => "sucesso"]);
-        } else {
-            echo json_encode(["status" => "erro", "mensagem" => $conn->error]);
-        }
-    } else {
-        echo json_encode(["status" => "existe", "mensagem" => "Resultado já salvo."]);
-    }
+// Executar a consulta
+if ($stmt->execute()) {
+    echo json_encode(["status" => "sucesso", "mensagem" => "Resultado salvo com sucesso!"]);
 } else {
-    echo json_encode(["status" => "erro", "mensagem" => "Dados inválidos."]);
+    echo json_encode(["status" => "erro", "mensagem" => "Erro ao salvar: " . $stmt->error]);
 }
 
+$stmt->close();
 $conn->close();
 ?>
