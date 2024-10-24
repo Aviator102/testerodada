@@ -1,27 +1,31 @@
 <?php
-header('Content-Type: application/json');
-
 $servername = "18.209.111.107";
 $username = "painelrodada";
 $password = "painelrodada";
 $dbname = "painelrodada";
 
+// Criação da conexão
 $conn = new mysqli($servername, $username, $password, $dbname);
 
+// Verifica a conexão
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die(json_encode(["message" => "Erro de conexão: " . $conn->connect_error]));
 }
 
-$sql = "SELECT valor, hora, rodada FROM sua_tabela"; // Substitua 'sua_tabela' pelo nome correto da sua tabela
+// Consulta os resultados salvos
+$sql = "SELECT valor, hora, rodada FROM resultados";
 $result = $conn->query($sql);
 
-$savedResults = [];
+$results = [];
 if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $savedResults[] = $row;
+    // Busca os resultados
+    while($row = $result->fetch_assoc()) {
+        $results[] = $row;
     }
-}
+} 
 
 $conn->close();
-echo json_encode($savedResults);
+
+// Retorna os resultados em formato JSON
+echo json_encode($results);
 ?>
