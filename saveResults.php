@@ -32,7 +32,8 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("ssi", $valor, $hora, $rodada);
 
 if ($stmt->execute()) {
-    echo json_encode(['success' => true, 'message' => 'Resultado salvo com sucesso!']);
+    // Retornar a rodada do resultado salvo
+    echo json_encode(['success' => true, 'message' => 'Resultado salvo com sucesso!', 'rodada' => $rodada]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Erro ao salvar resultado: ' . $stmt->error]);
 }
