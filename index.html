@@ -3,25 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultados API</title>
+    <title>Resultados da Aposta</title>
     <style>
-        .resultado-item {
-            margin: 5px 0;
-        }
-        .status {
-            margin-top: 10px;
-            font-weight: bold;
-            color: green;
-        }
-        .error {
-            color: red;
-        }
+        body { font-family: Arial, sans-serif; }
+        .resultado { margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; }
+        .status { color: green; }
+        .error { color: red; }
     </style>
 </head>
 <body>
-    <h1>Resultados da API</h1>
+    <h1>Resultados da Aposta</h1>
+    <div id="status"></div>
     <div id="resultados"></div>
-    <div class="status" id="status"></div> <!-- Div para exibir o status -->
 
     <script src="script.js"></script>
 </body>
