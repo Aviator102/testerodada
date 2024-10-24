@@ -25,6 +25,7 @@ if ($result->num_rows > 0) {
 }
 
 // Retorna os resultados em formato JSON
+header('Content-Type: application/json'); // Define o tipo de conteúdo como JSON
 echo json_encode($resultsArray);
 
 $conn->close();
