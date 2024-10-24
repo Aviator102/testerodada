@@ -1,68 +1,81 @@
-async function fetchAndDisplayResults() {
+const apiUrl = 'https://api-aviator-cb5db3cad4c0.herokuapp.com/history-odd?date=2024-09-18&numberVelas=10&betHouse=Aposta_ganha';
+
+async function fetchApiResults() {
     try {
-        const response = await fetch('/api/fetchResults.php');
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error('Network response was not ok');
         const results = await response.json();
-
-        const resultadosDiv = document.getElementById('resultados');
-        resultadosDiv.innerHTML = ''; // Limpa resultados anteriores
-
-        if (results.length === 0) {
-            resultadosDiv.innerHTML = '<div>Nenhum resultado encontrado.</div>';
-        } else {
-            results.forEach(item => {
-                const resultadoDiv = document.createElement('div');
-                resultadoDiv.className = 'resultado';
-                resultadoDiv.innerHTML = `Valor: ${item.valor} | Hora: ${item.hora}`;
-                resultadosDiv.appendChild(resultadoDiv);
-            });
-        }
+        displayApiResults(results);
+        await saveResults(results);
     } catch (error) {
-        console.error("Erro ao buscar resultados:", error);
-        document.getElementById('status').innerHTML = `<div class="error">Erro: ${error.message}</div>`;
+        console.error('Erro ao buscar resultados da API:', error);
+        document.getElementById('statusMessage').textContent = 'Erro ao buscar resultados da API.';
     }
 }
 
-async function fetchAndSaveResults() {
+function displayApiResults(results) {
+    const apiResultsDiv = document.getElementById('apiResults');
+    apiResultsDiv.innerHTML = '<h2>Resultados da API:</h2>';
+    
+    results.forEach(result => {
+        apiResultsDiv.innerHTML += `
+            <div class="result">
+                Valor: ${result.odd}, Hora: ${result.hour}
+            </div>
+        `;
+    });
+}
+
+async function saveResults(results) {
     try {
-        const response = await fetch('https://api-aviator-cb5db3cad4c0.herokuapp.com/history-odd?date=2024-09-18&numberVelas=10&betHouse=Aposta_ganha');
-        
-        if (!response.ok) {
-            throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        const statusDiv = document.getElementById('status');
-        statusDiv.innerHTML = ''; // Limpa o status anterior
-
-        for (const item of data) {
-            const valor = item.odd; // A propriedade "odd" contém o valor
-            const hora = item.hour;  // A propriedade "hour" contém a hora
-
-            const saveResponse = await fetch('/api/saveResults.php', {
+        for (const result of results) {
+            const response = await fetch('saveResults.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ valor, hora })
+                body: JSON.stringify({
+                    valor: result.odd,
+                    hora: result.hour
+                })
             });
-            
-            const saveResult = await saveResponse.json();
-
-            // Atualiza a div de status com a mensagem recebida
-            if (saveResult.status === 'success') {
-                statusDiv.innerHTML += `<div class="status">${saveResult.message}</div>`;
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('statusMessage').textContent = 'Resultados salvos com sucesso!';
             } else {
-                statusDiv.innerHTML += `<div class="error">${saveResult.message}</div>`;
+                document.getElementById('statusMessage').textContent = 'Erro ao salvar resultados.';
             }
         }
+        fetchSavedResults(); // Atualiza a lista de resultados salvos
     } catch (error) {
-        console.error("Erro ao buscar e salvar resultados:", error);
-        const statusDiv = document.getElementById('status');
-        statusDiv.innerHTML = `<div class="error">Erro: ${error.message}</div>`;
+        console.error('Erro ao salvar resultados:', error);
+        document.getElementById('statusMessage').textContent = 'Erro ao salvar resultados.';
     }
 }
 
-// Chama as funções ao carregar a página
-fetchAndDisplayResults();
-fetchAndSaveResults();
+async function fetchSavedResults() {
+    try {
+        const response = await fetch('fetchResults.php');
+        const results = await response.json();
+        displaySavedResults(results);
+    } catch (error) {
+        console.error('Erro ao buscar resultados salvos:', error);
+    }
+}
+
+function displaySavedResults(results) {
+    const savedResultsDiv = document.getElementById('savedResults');
+    savedResultsDiv.innerHTML = '<h2>Resultados Salvos:</h2>';
+    
+    results.forEach(result => {
+        savedResultsDiv.innerHTML += `
+            <div class="result">
+                Valor: ${result.valor}, Hora: ${result.hora}, Rodada: ${result.rodada}
+            </div>
+        `;
+    });
+}
+
+// Chama a função a cada 10 segundos
+setInterval(fetchApiResults, 10000);
+fetchSavedResults(); // Busca resultados salvos na inicialização
