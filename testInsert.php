@@ -1,35 +1,56 @@
-<?php
-header('Content-Type: application/json');
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Inserção no Banco de Dados</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Adicione um link para um CSS se quiser estilizar -->
+</head>
+<body>
+    <h1>Teste de Inserção no Banco de Dados</h1>
+    <button id="insertButton">Inserir Dados de Teste</button>
+    <div id="statusMessage"></div>
 
-// Configurações do banco de dados
-$servername = "18.209.111.107";
-$username = "painelrodada";
-$password = "painelrodada";
-$dbname = "painelrodada";
+    <h2>Resultados Salvos</h2>
+    <div id="resultsContainer"></div>
 
-// Conexão com o banco de dados
-$conn = new mysqli($servername, $username, $password, $dbname);
+    <script>
+        document.getElementById('insertButton').addEventListener('click', function() {
+            fetch('testInsert.php') // Chama o script PHP
+                .then(response => response.json())
+                .then(data => {
+                    const statusMessage = document.getElementById('statusMessage');
+                    statusMessage.innerHTML = data.message; // Exibe a mensagem de status
 
-// Verifica se a conexão foi bem-sucedida
-if ($conn->connect_error) {
-    die(json_encode(['success' => false, 'message' => 'Connection failed: ' . $conn->connect_error]));
-}
+                    // Carrega novamente os resultados salvos
+                    loadSavedResults();
+                })
+                .catch(error => {
+                    console.error('Erro ao inserir dados:', error);
+                    document.getElementById('statusMessage').innerHTML = 'Erro ao inserir dados.';
+                });
+        });
 
-// Dados de teste para inserir
-$valor = "1.50"; // valor do teste
-$hora = date("H:i:s"); // hora atual
+        function loadSavedResults() {
+            fetch('fetchResults.php') // Chama o script para buscar os resultados salvos
+                .then(response => response.json())
+                .then(data => {
+                    const resultsContainer = document.getElementById('resultsContainer');
+                    resultsContainer.innerHTML = ''; // Limpa resultados anteriores
 
-// Inserção no banco de dados
-$sqlInsert = "INSERT INTO sua_tabela (valor, hora, rodada) VALUES (?, ?, (SELECT COALESCE(MAX(rodada), 0) + 1 FROM sua_tabela))"; // Substitua 'sua_tabela' pelo nome correto da sua tabela
-$stmtInsert = $conn->prepare($sqlInsert);
-$stmtInsert->bind_param("ss", $valor, $hora);
+                    data.forEach(result => {
+                        const resultDiv = document.createElement('div');
+                        resultDiv.innerHTML = `Valor: ${result.valor} | Hora: ${result.hora} | Rodada: ${result.rodada}`;
+                        resultsContainer.appendChild(resultDiv);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar resultados salvos:', error);
+                });
+        }
 
-if ($stmtInsert->execute()) {
-    echo json_encode(['success' => true, 'message' => 'Dados inseridos com sucesso!']);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Erro ao inserir dados: ' . $stmtInsert->error]);
-}
-
-$stmtInsert->close();
-$conn->close();
-?>
+        // Carrega os resultados ao carregar a página
+        window.onload = loadSavedResults;
+    </script>
+</body>
+</html>
