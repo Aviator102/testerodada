@@ -1,32 +1,30 @@
 <?php
+header('Content-Type: application/json');
+
 $servername = "18.209.111.107";
 $username = "painelrodada";
 $password = "painelrodada";
 $dbname = "painelrodada";
 
-// Criar conexão
+// Criando conexão
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Verificar a conexão
+// Verificando conexão
 if ($conn->connect_error) {
-    die("Conexão falhou: " . $conn->connect_error);
+    die(json_encode(['status' => 'error', 'message' => 'Conexão falhou: ' . $conn->connect_error]));
 }
 
-// Consultar os resultados salvos
-$sql = "SELECT valor, hora FROM resultados ORDER BY id DESC"; // Retorna os resultados ordenados pelo ID
+// Consultando resultados
+$sql = "SELECT valor, hora FROM tabela"; // Use o nome correto da tabela
 $result = $conn->query($sql);
 
-$resultsArray = [];
+$results = [];
 if ($result->num_rows > 0) {
-    // Busca os resultados e armazena em um array
     while ($row = $result->fetch_assoc()) {
-        $resultsArray[] = $row;
+        $results[] = $row;
     }
 }
 
-// Retorna os resultados em formato JSON
-header('Content-Type: application/json'); // Define o tipo de conteúdo como JSON
-echo json_encode($resultsArray);
-
+echo json_encode($results);
 $conn->close();
 ?>
