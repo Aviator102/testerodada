@@ -6,15 +6,17 @@
     <title>Resultados da API Aviator</title>
     <style>
         body { font-family: Arial, sans-serif; }
-        .result { margin: 10px 0; }
-        .status { font-weight: bold; }
+        .resultado { margin: 5px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
     </style>
 </head>
 <body>
     <h1>Resultados da API Aviator</h1>
-    <div id="apiResults"></div>
-    <div id="savedResults"></div>
-    <div class="status" id="statusMessage"></div>
+    <div id="status"></div>
+    <div id="api-results"></div>
+    <h2>Resultados Salvos</h2>
+    <div id="saved-results"></div>
 
     <script src="script.js"></script>
 </body>
