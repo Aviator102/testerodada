@@ -1,43 +1,44 @@
-<?php
-$servername = "18.209.111.107";
-$username = "painelrodada";
-$password = "painelrodada";
-$dbname = "painelrodada";
-
-// Criar conexão
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Verificar conexão
-if ($conn->connect_error) {
-    die("Conexão falhou: " . $conn->connect_error);
-}
-
-// Obter dados JSON
-$data = json_decode(file_get_contents("php://input"), true);
-$valor = $data['valor'];
-$hora = $data['hora'];
-
-// Consultar a próxima rodada
-$sql = "SELECT MAX(rodada) as max_rodada FROM resultados";
-$result = $conn->query($sql);
-$rodada = 1; // Valor padrão para a rodada
-if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-    $rodada = $row['max_rodada'] + 1; // Incrementa a rodada
-}
-
-// Inserir resultado
-$sql = "INSERT INTO resultados (valor, hora, rodada) VALUES (?, ?, ?)";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("ssi", $valor, $hora, $rodada);
-
-if ($stmt->execute()) {
-    // Retornar a rodada do resultado salvo
-    echo json_encode(['success' => true, 'message' => 'Resultado salvo com sucesso!', 'rodada' => $rodada]);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Erro ao salvar resultado: ' . $stmt->error]);
-}
-
-$stmt->close();
-$conn->close();
-?>
+setInterval(() => {
+    fetch('https://api-aviator-cb5db3cad4c0.herokuapp.com/history-odd?date=' + new Date().toISOString().split('T')[0] + '&numberVelas=10&betHouse=Aposta_ganha')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('resultados-api').innerHTML = ''; // Limpa resultados anteriores
+            
+            data.forEach(resultado => {
+                // Cria um novo elemento para cada resultado
+                const div = document.createElement('div');
+                div.className = 'resultado';
+                div.innerHTML = `
+                    <strong>Odd: ${resultado.odd}</strong><br>
+                    Hora: ${resultado.hour}<br>
+                `;
+                document.getElementById('resultados-api').appendChild(div);
+                
+                // Salvar resultado no banco de dados
+                fetch('saveResults.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        valor: resultado.odd,
+                        hora: resultado.hour,
+                    })
+                })
+                .then(response => response.json())
+                .then(res => {
+                    if (res.success) {
+                        // Exibir o número da rodada
+                        div.innerHTML += `<br>Rodada: ${res.rodada}`; // Atualiza o status
+                    } else {
+                        console.error(res.message);
+                    }
+                })
+                .catch(err => console.error('Erro ao salvar:', err));
+            });
+        })
+        .catch(err => {
+            console.error('Erro ao buscar resultados da API:', err);
+            document.getElementById('resultados-api').innerHTML = 'Erro ao buscar resultados.';
+        });
+}, 10000);
