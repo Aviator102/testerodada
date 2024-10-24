@@ -1,6 +1,9 @@
 const fetchResults = async () => {
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+
     try {
-        const response = await fetch('https://api-aviator-cb5db3cad4c0.herokuapp.com/history-odd?date=2024-09-18&numberVelas=10&betHouse=Aposta_ganha');
+        const response = await fetch(`https://api-aviator-cb5db3cad4c0.herokuapp.com/history-odd?date=${formattedDate}&numberVelas=10&betHouse=Aposta_ganha`);
         if (!response.ok) throw new Error('Erro ao buscar resultados da API');
 
         const data = await response.json();
