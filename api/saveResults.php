@@ -1,38 +1,47 @@
 <?php
 header('Content-Type: application/json');
 
-// Configurações do banco de dados
 $servername = "18.209.111.107";
 $username = "painelrodada";
 $password = "painelrodada";
 $dbname = "painelrodada";
 
-// Conectar ao banco de dados
+// Criando conexão
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Verificar a conexão
+// Verificando conexão
 if ($conn->connect_error) {
-    die(json_encode(["status" => "erro", "mensagem" => "Conexão falhou: " . $conn->connect_error]));
+    die(json_encode(['status' => 'error', 'message' => 'Conexão falhou: ' . $conn->connect_error]));
 }
 
-// Obter os dados do POST
-$data = json_decode(file_get_contents("php://input"));
+// Recebendo dados JSON
+$data = json_decode(file_get_contents("php://input"), true);
+$valor = $data['valor'];
+$hora = $data['hora'];
 
-// Preparar a consulta
-$stmt = $conn->prepare("INSERT INTO resultados (valor, hora, rodada, formattedDate) VALUES (?, ?, ?, ?)");
-$stmt->bind_param("ssis", $data->valor, $data->hora, $rodada, $formattedDate);
+// Verificando se o resultado já existe na tabela
+$sqlCheck = "SELECT * FROM tabela WHERE valor = ? AND hora = ?";
+$stmtCheck = $conn->prepare($sqlCheck);
+$stmtCheck->bind_param("ss", $valor, $hora);
+$stmtCheck->execute();
+$resultCheck = $stmtCheck->get_result();
 
-// Definir o valor de rodada e formattedDate
-$rodada = 1; // Ou outra lógica para incrementar
-$formattedDate = date('Y-m-d'); // Data atual no formato YYYY-MM-DD
-
-// Executar a consulta
-if ($stmt->execute()) {
-    echo json_encode(["status" => "sucesso", "mensagem" => "Resultado salvo com sucesso!"]);
+if ($resultCheck->num_rows > 0) {
+    echo json_encode(['status' => 'error', 'message' => 'Resultado já existe.']);
 } else {
-    echo json_encode(["status" => "erro", "mensagem" => "Erro ao salvar: " . $stmt->error]);
+    // Incrementando a rodada
+    $sqlRodada = "INSERT INTO tabela (valor, hora, rodada) VALUES (?, ?, (SELECT IFNULL(MAX(rodada), 0) + 1 FROM tabela))";
+    $stmt = $conn->prepare($sqlRodada);
+    $stmt->bind_param("ss", $valor, $hora);
+    
+    if ($stmt->execute()) {
+        echo json_encode(['status' => 'success', 'message' => 'Resultado salvo com sucesso!']);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Erro ao salvar resultado: ' . $stmt->error]);
+    }
 }
 
+$stmtCheck->close();
 $stmt->close();
 $conn->close();
 ?>
