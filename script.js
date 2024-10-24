@@ -1,3 +1,27 @@
+async function fetchAndDisplayResults() {
+    try {
+        const response = await fetch('/api/fetchResults.php'); // Altere o caminho conforme necessário
+        const results = await response.json();
+
+        const resultadosDiv = document.getElementById('resultados');
+        resultadosDiv.innerHTML = ''; // Limpa resultados anteriores
+
+        if (results.length === 0) {
+            resultadosDiv.innerHTML = '<div>Nenhum resultado encontrado.</div>';
+        } else {
+            results.forEach(item => {
+                const resultadoDiv = document.createElement('div');
+                resultadoDiv.className = 'resultado';
+                resultadoDiv.innerHTML = `Valor: ${item.valor} | Hora: ${item.hora}`;
+                resultadosDiv.appendChild(resultadoDiv);
+            });
+        }
+    } catch (error) {
+        console.error("Erro ao buscar resultados:", error);
+        document.getElementById('status').innerHTML = `<div class="error">Erro: ${error.message}</div>`;
+    }
+}
+
 async function fetchAndSaveResults() {
     try {
         console.log("Buscando resultados da API...");
@@ -44,6 +68,6 @@ async function fetchAndSaveResults() {
     }
 }
 
-// Chama a função para buscar e exibir resultados salvos ao carregar a página
+// Chama as funções ao carregar a página
 fetchAndDisplayResults();
-fetchAndSaveResults(); // Chama a função para buscar e salvar resultados
+fetchAndSaveResults();
