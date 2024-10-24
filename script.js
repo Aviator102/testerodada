@@ -24,7 +24,11 @@ setInterval(() => {
                 resultados.forEach(resultado => {
                     const div = document.createElement('div');
                     div.className = 'resultado';
-                    div.textContent = `Odd: ${resultado.odd} | Hora: ${resultado.hour} | Rodada: ${rodada}`; // Formato ajustado
+                    div.innerHTML = `
+                        <strong>Odd: ${resultado.odd}</strong><br>
+                        Hora: ${resultado.hour}<br>
+                        Rodada: ${rodada}<br>
+                    `; // Formato ajustado
                     document.getElementById('resultados-api').appendChild(div);
                     
                     // Salvar resultado no banco de dados
@@ -66,7 +70,11 @@ function fetchSavedResults() {
             data.forEach(resultado => {
                 const div = document.createElement('div');
                 div.className = 'resultado';
-                div.textContent = `Odd: ${resultado.valor} | Hora: ${resultado.hora} | Rodada: ${resultado.rodada}`; // Formato ajustado
+                div.innerHTML = `
+                    <strong>Odd: ${resultado.valor}</strong><br>
+                    Hora: ${resultado.hora}<br>
+                    Rodada: ${resultado.rodada}<br>
+                `; // Formato ajustado
                 document.getElementById('resultados-salvos').appendChild(div);
             });
         })
