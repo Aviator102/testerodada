@@ -3,33 +3,59 @@ setInterval(() => {
         .then(response => response.json())
         .then(data => {
             document.getElementById('resultados-api').innerHTML = ''; // Limpa resultados anteriores
-            data.forEach(resultado => {
-                const div = document.createElement('div');
-                div.className = 'resultado';
-                div.textContent = `Odd: ${resultado.odd} | Hora: ${resultado.hour}`;
-                document.getElementById('resultados-api').appendChild(div);
-                
-                // Salvar resultado no banco de dados
-                fetch('saveResults.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        valor: resultado.odd,
-                        hora: resultado.hour
-                    })
-                })
-                .then(response => response.json())
-                .then(res => {
-                    if (res.success) {
-                        document.getElementById('status').textContent = res.message; // Atualiza o status
-                    } else {
-                        console.error(res.message);
-                    }
-                })
-                .catch(err => console.error('Erro ao salvar:', err));
+            
+            // Variável para armazenar os resultados agrupados por rodada
+            let resultadosPorRodada = {};
+            
+            data.forEach((resultado, index) => {
+                // Adiciona o resultado à rodada correspondente
+                const rodada = index + 1; // Simulando rodada como um contador sequencial
+                if (!resultadosPorRodada[rodada]) {
+                    resultadosPorRodada[rodada] = [];
+                }
+                resultadosPorRodada[rodada].push({
+                    odd: resultado.odd,
+                    hour: resultado.hour
+                });
             });
+            
+            // Exibir resultados agrupados por rodada
+            for (const [rodada, resultados] of Object.entries(resultadosPorRodada)) {
+                const divRodada = document.createElement('div');
+                divRodada.className = 'rodada';
+                divRodada.innerHTML = `<strong>Rodada ${rodada}</strong>`;
+                
+                resultados.forEach(resultado => {
+                    const div = document.createElement('div');
+                    div.className = 'resultado';
+                    div.textContent = `Odd: ${resultado.odd} | Hora: ${resultado.hour}`;
+                    divRodada.appendChild(div);
+                    
+                    // Salvar resultado no banco de dados
+                    fetch('saveResults.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            valor: resultado.odd,
+                            hora: resultado.hour,
+                            rodada: rodada // Adicionando rodada aqui
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(res => {
+                        if (res.success) {
+                            document.getElementById('status').textContent = res.message; // Atualiza o status
+                        } else {
+                            console.error(res.message);
+                        }
+                    })
+                    .catch(err => console.error('Erro ao salvar:', err));
+                });
+                
+                document.getElementById('resultados-api').appendChild(divRodada);
+            }
         })
         .catch(err => {
             console.error('Erro ao buscar resultados da API:', err);
@@ -46,7 +72,7 @@ function fetchSavedResults() {
             data.forEach(resultado => {
                 const div = document.createElement('div');
                 div.className = 'resultado';
-                div.textContent = `Valor: ${resultado.valor} | Hora: ${resultado.hora}`;
+                div.textContent = `Valor: ${resultado.valor} | Hora: ${resultado.hora} | Rodada: ${resultado.rodada}`;
                 document.getElementById('resultados-salvos').appendChild(div);
             });
         })
