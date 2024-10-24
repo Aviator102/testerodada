@@ -1,63 +1,57 @@
-const fetchResults = async () => {
-    const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
-
-    try {
-        const response = await fetch(`https://api-aviator-cb5db3cad4c0.herokuapp.com/history-odd?date=${formattedDate}&numberVelas=10&betHouse=Aposta_ganha`);
-        if (!response.ok) throw new Error('Erro ao buscar resultados da API');
-
-        const data = await response.json();
-        displayApiResults(data);
-        
-        // Salvar resultados no banco de dados
-        for (const item of data) {
-            await saveResult(item.odd, item.hour);
-        }
-
-        updateSavedResults();
-    } catch (error) {
-        document.getElementById('status').innerHTML = `<div class="error">Erro: ${error.message}</div>`;
-    }
-};
-
-const saveResult = async (valor, hora) => {
-    try {
-        const response = await fetch('saveResults.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ valor, hora })
+setInterval(() => {
+    fetch('https://api-aviator-cb5db3cad4c0.herokuapp.com/history-odd?date=' + new Date().toISOString().split('T')[0] + '&numberVelas=10&betHouse=Aposta_ganha')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('resultados-api').innerHTML = ''; // Limpa resultados anteriores
+            data.forEach(resultado => {
+                const div = document.createElement('div');
+                div.className = 'resultado';
+                div.textContent = `Odd: ${resultado.odd} | Hora: ${resultado.hour}`;
+                document.getElementById('resultados-api').appendChild(div);
+                
+                // Salvar resultado no banco de dados
+                fetch('saveResults.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        valor: resultado.odd,
+                        hora: resultado.hour
+                    })
+                })
+                .then(response => response.json())
+                .then(res => {
+                    if (res.success) {
+                        document.getElementById('status').textContent = res.message; // Atualiza o status
+                    } else {
+                        console.error(res.message);
+                    }
+                })
+                .catch(err => console.error('Erro ao salvar:', err));
+            });
+        })
+        .catch(err => {
+            console.error('Erro ao buscar resultados da API:', err);
+            document.getElementById('resultados-api').innerHTML = 'Erro ao buscar resultados.';
         });
+}, 10000);
 
-        const result = await response.json();
-        document.getElementById('status').innerHTML = `<div class="success">${result.message}</div>`;
-    } catch (error) {
-        document.getElementById('status').innerHTML = `<div class="error">Erro ao salvar: ${error.message}</div>`;
-    }
-};
+// Função para buscar resultados salvos no banco de dados
+function fetchSavedResults() {
+    fetch('fetchResults.php')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('resultados-salvos').innerHTML = ''; // Limpa resultados anteriores
+            data.forEach(resultado => {
+                const div = document.createElement('div');
+                div.className = 'resultado';
+                div.textContent = `Valor: ${resultado.valor} | Hora: ${resultado.hora}`;
+                document.getElementById('resultados-salvos').appendChild(div);
+            });
+        })
+        .catch(err => console.error('Erro ao buscar resultados salvos:', err));
+}
 
-const displayApiResults = (data) => {
-    const apiResultsDiv = document.getElementById('api-results');
-    apiResultsDiv.innerHTML = '<h2>Resultados da API</h2>';
-    data.forEach(item => {
-        apiResultsDiv.innerHTML += `<div class="resultado">Odd: ${item.odd} | Hora: ${item.hour}</div>`;
-    });
-};
-
-const updateSavedResults = async () => {
-    try {
-        const response = await fetch('fetchResults.php');
-        const results = await response.json();
-        
-        const savedResultsDiv = document.getElementById('saved-results');
-        savedResultsDiv.innerHTML = '';
-        results.forEach(item => {
-            savedResultsDiv.innerHTML += `<div class="resultado">Valor: ${item.valor} | Hora: ${item.hora} | Rodada: ${item.rodada}</div>`;
-        });
-    } catch (error) {
-        console.error('Erro ao buscar resultados salvos:', error);
-    }
-};
-
-// Executar a função a cada 10 segundos
-setInterval(fetchResults, 10000);
-fetchResults(); // Chama a função na primeira execução
+// Buscar resultados salvos ao carregar a página
+fetchSavedResults();
